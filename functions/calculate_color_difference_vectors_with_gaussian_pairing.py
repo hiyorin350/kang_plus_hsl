@@ -22,11 +22,9 @@ def calculate_color_difference_vectors_with_gaussian_pairing(image):#TODO この
 
     hsl_image = rgb_to_hsl(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-    mhsl_image = hsl_to_mhsl(hsl_image)
+    cartesian_hsl = hsl_to_cartesian(hsl_image)
 
-    cartesian_mhsl = hsl_to_cartesian(mhsl_image)
-
-    flat_mhsl_image = cartesian_mhsl.reshape(N, 3)
+    flat_hsl_image = cartesian_hsl.reshape(N, 3)
 
     # ガウス分布を使用してランダムなペアを生成
     for i in range(N):
@@ -43,11 +41,11 @@ def calculate_color_difference_vectors_with_gaussian_pairing(image):#TODO この
 
         # 色差ベクトルを計算
         neighbor_index = ny * width + nx
-        Xl[i, 0] = flat_mhsl_image[i, 0] - flat_mhsl_image[neighbor_index, 0]#直交座標HSLのx
-        Xl[i, 1] = flat_mhsl_image[i, 1] - flat_mhsl_image[neighbor_index, 1]#y
-        Xl[i, 2] = flat_mhsl_image[i, 2] - flat_mhsl_image[neighbor_index, 2]#z(=L)
+        Xl[i, 0] = flat_hsl_image[i, 0] - flat_hsl_image[neighbor_index, 0]#直交座標HSLのx
+        Xl[i, 1] = flat_hsl_image[i, 1] - flat_hsl_image[neighbor_index, 1]#y
+        Xl[i, 2] = flat_hsl_image[i, 2] - flat_hsl_image[neighbor_index, 2]#z(=L)
 
-        w[i] = np.exp(-np.square(flat_mhsl_image[i, 2] - flat_mhsl_image[neighbor_index, 2]) / 2 * np.square(sigma_weight))
+        w[i] = np.exp(-np.square(flat_hsl_image[i, 2] - flat_hsl_image[neighbor_index, 2]) / 2 * np.square(sigma_weight))
         # print(w[i])
     
     return Xl, w

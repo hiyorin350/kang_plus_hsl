@@ -73,59 +73,9 @@ def hsl_to_rgb(hsl_image):
 
     return np.clip(rgb_image * 255, 0, 255).astype(np.uint8)
 
-def hsl_to_mhsl(hsl_image):
-    H, S, L = hsl_image[:, :, 0], (hsl_image[:, :, 1] / 100), (hsl_image[:, :, 2] / 100)
-    R, E, G, C, B, M = 0.30, 0.66, 0.59, 0.64, 0.12, 0.26
-
-    # Hの値に基づいてqとtを計算
-    q = (H / 60).astype(int)
-    t = H % 60
-
-    a = [R, E, G, C, B, M, R]
-
-    # alpha, l_fun_smax, l_funの計算
-    alpha = np.take(a, q + 1) * (t / 60.0) + np.take(a, q) * (60.0 - t) / 60.0
-    l_fun_smax = -np.log2(alpha)
-    l_fun = l_fun_smax * S + (1.0 - S)
-
-    # l_tildaの計算とh_tilda, s_tildaの設定
-    l_tilda = 100 * (L ** l_fun)
-    h_tilda = H
-    s_tilda = S * 100
-
-    # 修正されたHSL値を含む新しい画像を返す
-    mhsl_image = np.stack((h_tilda, s_tilda, l_tilda), axis=-1)
-    return mhsl_image
-
-def mhsl_to_hsl(mhsl_image):#TODO S,Lのスケール調整
-    # 配列からHSLの各成分を取得
-    H_tilda, S_tilda, L_tilda = mhsl_image[:,:,0], (mhsl_image[:,:,1] / 100), (mhsl_image[:,:,2] / 100)
-
-    R, E, G, C, B, M = 0.30, 0.66, 0.59, 0.64, 0.12, 0.26
-    a = np.array([R, E, G, C, B, M, R])
-
-    H_tilda
-    q = (H_tilda / 60).astype(int)
-    t = H_tilda % 60
-
-    alpha = a[q + 1] * (t / 60.0) + a[q] * (60.0 - t) / 60.0
-    l_fun_smax = -np.log2(alpha)
-    l_fun = l_fun_smax * S_tilda + (1.0 - S_tilda)
-
-    L_org = np.power(L_tilda, (1.0 / l_fun)) * 100
-
-    # HとSは変換されていないため、そのまま返す
-    H_org, S_org = H_tilda, (S_tilda * 100)
-
-    # 変換後の画像データを構築
-    hsl_image = np.stack((H_org, S_org, L_org), axis=-1)
-    return hsl_image
-
 # 画像データのダミー例を作成してテストする
 # image = cv2.imread('/Users/hiyori/kang_hsl/images/Lena.ppm')
 # hsl_image = rgb_to_hsl(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-# mhsl_image = hsl_to_mhsl(hsl_image)
-# re_hsl_image = mhsl_to_hsl(mhsl_image)
 # re_rgb_image = hsl_to_rgb(re_hsl_image)
 # cv2.imshow('test', cv2.cvtColor(re_rgb_image, cv2.COLOR_RGB2BGR))
 # cv2.waitKey(0)

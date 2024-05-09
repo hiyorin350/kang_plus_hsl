@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 from scipy.optimize import minimize
 
-image = cv2.imread('/Users/hiyori/kang_plus/images/Lena.ppm')
+image = cv2.imread('/Users/hiyori/kang_plus_hsl/images/chart26.ppm')
 assert image is not None, "読み込みに失敗しました"
 
 height, width, _ = image.shape

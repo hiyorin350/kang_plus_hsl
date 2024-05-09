@@ -52,20 +52,19 @@ def project_pixels_to_color_plane(image, u):#TODO HSLでも射影　labから直
     return projected_image
 
 # 画像の読み込み
-image = cv2.imread('/Users/hiyori/kang_plus/images/Chart26_kang_plus_rotate_mhsl.ppm')
+image = cv2.imread('/Users/hiyori/kang_plus_hsl/images/Chart26_kang_plus_rotate_hsl.ppm')
 
 hsl_image = rgb_to_hsl(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-mhsl_image = hsl_to_mhsl(hsl_image)
-mhsl_cartesian = hsl_to_cartesian(mhsl_image)
+hsl_cartesian = hsl_to_cartesian(hsl_image)
 
 height, width, _ = image.shape
 N = height * width
 
 u = angle_to_normal_vector(50.19789)#2色覚平面(EB平面)
 
-projected_image = project_pixels_to_color_plane(mhsl_cartesian, u)
+projected_image = project_pixels_to_color_plane(hsl_cartesian, u)
 
-img_out_rgb = hsl_to_rgb(mhsl_to_hsl(cartesian_to_hsl(projected_image)))
+img_out_rgb = hsl_to_rgb(cartesian_to_hsl(projected_image))
 
 # if img_out_rgb.dtype == np.float32 or img_out_rgb.dtype == np.float64:
 #     # 最大値が1.0を超えない場合、255を掛ける　入っていない
@@ -77,7 +76,7 @@ print("done!")
 
 img_out_bgr = cv2.cvtColor(img_out_rgb, cv2.COLOR_RGB2BGR)
 
-cv2.imwrite('/Users/hiyori/kang_plus/images/Chart26_kang_plus_pjt_mhsl.ppm',img_out_bgr)
+cv2.imwrite('/Users/hiyori/kang_plus_hsl/images/Chart26_kang_plus_pjt_hsl.ppm',img_out_bgr)
 cv2.imshow('hsl_projected', img_out_bgr)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
