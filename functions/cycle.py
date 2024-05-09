@@ -78,7 +78,7 @@ def cycle(image, u):
     img_out: BGR色空間での回転後の画像を表す配列
     """
     # 画像の読み込み
-    image = cv2.imread('/Users/hiyori/kang/images/Chart26.ppm')
+    # image = cv2.imread('/Users/hiyori/kang/images/Chart26.ppm')
 
     lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 

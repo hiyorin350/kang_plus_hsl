@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 from conversions import *
-#FIXME 何も起きていない
 
 def angle_to_normal_vector(angle):
     """
@@ -53,8 +52,8 @@ def project_pixels_to_color_plane(image, u):#TODO HSLでも射影　labから直
     return projected_image
 
 # 画像の読み込み
-image = cv2.imread('/Users/hiyori/kang_mhsl/images/Chart26_kang_rotate_mhsl.ppm')
-print(image[120,110,:])
+image = cv2.imread('/Users/hiyori/kang_plus/images/Chart26_kang_plus_rotate_mhsl.ppm')
+
 hsl_image = rgb_to_hsl(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 mhsl_image = hsl_to_mhsl(hsl_image)
 mhsl_cartesian = hsl_to_cartesian(mhsl_image)
@@ -78,7 +77,7 @@ print("done!")
 
 img_out_bgr = cv2.cvtColor(img_out_rgb, cv2.COLOR_RGB2BGR)
 
-cv2.imwrite('/Users/hiyori/kang_mhsl/images/Chart26_kang_pjt_mhsl.ppm',img_out_bgr)
+cv2.imwrite('/Users/hiyori/kang_plus/images/Chart26_kang_plus_pjt_mhsl.ppm',img_out_bgr)
 cv2.imshow('hsl_projected', img_out_bgr)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
