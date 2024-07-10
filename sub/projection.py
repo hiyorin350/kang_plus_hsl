@@ -52,7 +52,7 @@ def project_pixels_to_color_plane(image, u):
     return projected_image
 
 # 画像の読み込み
-image = cv2.imread('/Users/hiyori/kang_plus_hsl/images/Chart15_kang_plus_rotate_hsl.ppm')
+image = cv2.imread('images/chart26/chart26_kang_plus_rotate_hsl.ppm')
 
 hsl_image = rgb_to_hsl(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 hsl_cartesian = hsl_to_cartesian(hsl_image)
@@ -76,7 +76,7 @@ print("done!")
 
 img_out_bgr = cv2.cvtColor(img_out_rgb, cv2.COLOR_RGB2BGR)
 
-cv2.imwrite('/Users/hiyori/kang_plus_hsl/images/Chart15_kang_plus_pjt_hsl.ppm',img_out_bgr)
+cv2.imwrite('images/chart26/chart26_kang_plus_pjt_hsl.ppm',img_out_bgr)
 cv2.imshow('hsl_projected', img_out_bgr)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

@@ -1,80 +1,87 @@
-import sys
-sys.path.append('/Users/hiyori/kang_plus')
-from functions import *
 import numpy as np
+import sys
+sys.path.append('/Users/hiyori/kang_plus_hsl')
 import cv2
+from functions import *
 from scipy.optimize import minimize
+import sys
 
-image = cv2.imread('/Users/hiyori/kang_plus_hsl/images/chart15.ppm')
-assert image is not None, "読み込みに失敗しました"
+def main(image_path, apply_weight=True):
+    image = cv2.imread(image_path)
+    assert image is not None, "読み込みに失敗しました"
 
-height, width, _ = image.shape
-N = height * width
+    height, width, _ = image.shape
+    N = height * width
 
-result_image = image
+    # G(u)を計算する関数、今回は未搭載
+    # g = global_contrast.global_contrast(cv2.cvtColor(image, cv2.COLOR_BGR2LAB))
 
-# G(u)を計算する関数、今回は未搭載
-# g = global_contrast.global_contrast(cv2.cvtColor(image, cv2.COLOR_BGR2LAB))
+    #TODO J(u)を計算する関数、今回は未搭載
+    # j = alpha * l + (1 - alpha) * g
 
-#TODO J(u)を計算する関数、今回は未搭載
-# j = alpha * l + (1 - alpha) * g
+    #Xlを計算する関数
+    Xl, w = calculate_color_difference_vectors_with_gaussian_pairing.calculate_color_difference_vectors_with_gaussian_pairing(image)
 
-#Xlを計算する関数 TODO ここに重みを追加
-Xl, w = calculate_color_difference_vectors_with_gaussian_pairing.calculate_color_difference_vectors_with_gaussian_pairing(image)
-# print(w.shape), print(Xl.T.shape), print(Xl.shape)
-Al = Xl.T @ Xl
-# print((w @ Xl).shape)
-Xl_new = np.zeros_like(Xl)
+    if apply_weight:
+        Xl_weight = np.zeros_like(Xl)
+        for i in range(N):
+            Xl_weight[i, 0] = Xl[i, 0] * w[i]
+            Xl_weight[i, 1] = Xl[i, 1] * w[i]
+            Xl_weight[i, 2] = Xl[i, 2] * w[i]
+        Al_new = Xl_weight.T @ Xl_weight
+    else:
+        Al_new = Xl.T @ Xl
 
-for i in range(N):
-    Xl_new[i,0] = Xl[i,0] * w[i]
-    Xl_new[i,1] = Xl[i,1] * w[i]
-    Xl_new[i,2] = Xl[i,2] * w[i]
-    # print(Xl_new[i,0])
-    # print(Xl[i,0])
-    # print(Xl[i,2])
-    # print()
+    # 目的関数と制約条件の定義
+    def objective(u):
+        return ((u.T @ Al_new @ u) / N)
 
-Al_new = Xl_new.T @ Xl
+    # L軸に垂直な制約
+    def constraint_perpendicular_to_L(u):
+        e = np.array([0, 0, 1])  # L軸を指す標準基底ベクトル
+        return np.dot(u, e)
 
+    # 単位ベクトル制約
+    def constraint_unit_vector(u):
+        return np.dot(u, u) - 1
 
-# 目的関数と制約条件の定義
-def objective(u):
-    return ((u.T @ Al_new @ u) / N)
+    # 初期値の設定
+    u0 = np.random.rand(3)
+    u0 /= np.linalg.norm(u0)  # 単位ベクトル化
 
-# L軸に垂直な制約
-def constraint_perpendicular_to_L(u):
-    e = np.array([0, 0, 1])  # L軸を指す標準基底ベクトル
-    return np.dot(u, e)
+    # 制約の設定
+    constraints = [{'type': 'eq', 'fun': constraint_perpendicular_to_L},
+                   {'type': 'eq', 'fun': constraint_unit_vector}]
 
-# 単位ベクトル制約
-def constraint_unit_vector(u):
-    return np.dot(u, u) - 1
+    # 逐次二次計画法による最適化問題の解決
+    res = minimize(objective, u0, constraints=constraints, method="SLSQP")
 
-# 初期値の設定
-u0 = np.random.rand(3)
-u0 /= np.linalg.norm(u0) #単位ベクトル化
+    # 最適化された u の値
+    optimized_u = res.x
+    optimized_u = np.reshape(optimized_u, (3, 1))
 
-# 制約の設定
-constraints = [{'type': 'eq', 'fun': constraint_perpendicular_to_L},
-               {'type': 'eq', 'fun': constraint_unit_vector}]
+    # 最適化された結果の u^T Al u の値を計算
+    optimized_value = (optimized_u.T @ Al_new @ optimized_u) / N
 
-# 逐次二次計画法による最適化問題の解決
-res = minimize(objective, u0, constraints=constraints, method = "SLSQP")
+    x = optimized_u.reshape(1, 3)[0, 0]
+    y = optimized_u.reshape(1, 3)[0, 1]
 
-# 最適化された u の値
-optimized_u = res.x
-optimized_u = np.reshape(optimized_u, (3,1))
+    optimized_degree = (50.19789 - (np.rad2deg(np.arctan2(y, x)) + 90)) % 180
 
-# 最適化された結果の u^T Al u の値を計算
-optimized_value = (optimized_u.T @ Al @ optimized_u) / N
+    weight_status = "あり" if apply_weight else "なし"
+    print(f"画像名: {image_path}, 明度差重み: {weight_status}, 最適回転角度: {optimized_degree}")
 
-# 最適色平面と、二色覚平面の差分だけ回す
-img_out = cycle.cycle(image, optimized_u)#TODO cycle_imageに変更
+if __name__ == "__main__":
+    image_path = 'images/chart26/chart26.ppm'
+    user_input = input("明度差重みをつけますか？ (y/n): ").strip().lower()
+    if user_input == "y":
+        apply_weight = True
+    elif user_input == "n":
+        apply_weight = False
+    else:
+        print("無効な入力です。プログラムを終了します。")
+        sys.exit(1)  # プログラムを終了
 
-#最終的な画像を出す
+    main(image_path, apply_weight)
+
 print("done!")
-print(optimized_u)
-# cv2.imshow('result', img_out)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
